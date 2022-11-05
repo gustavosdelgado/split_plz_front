@@ -1,35 +1,55 @@
 import React from "react";
 import ReactDOM from "react-dom";
 
-class Clock extends React.Component {
+class App extends React.Component {
+
   constructor(props) {
     super(props);
-    this.state = { date: new Date() };
+    this.state = {
+      error: null,
+      isLoaded: false,
+      user: null
+    };
   }
 
   componentDidMount() {
-    this.timerID = setInterval(() => this.tick(), 1000);
-  }
-
-  componentWillUnmount() {
-    clearInterval(this.timerID);
-  }
-
-  tick() {
-    this.setState({
-      date: new Date()
-    });
+    fetch("http://192.168.1.46:8080/user/1")
+      .then(res => res.json())
+      .then(
+        (result) => {
+          this.setState({
+            isLoaded: true,
+            user: result
+          });
+        },
+        (error) => {
+          this.setState({
+            isLoaded: true,
+            error
+          });
+        }
+      )
   }
 
   render() {
-    return (
-      <div>
-        <h1>Hello, world!</h1>
-        <h2>It is {this.state.date.toLocaleTimeString()}.</h2>
-      </div>
-    );
+    const { error, isLoaded, user } = this.state;
+
+    if (error) {
+      return <div>Error: {error.message}</div>
+    } else if (!isLoaded) {
+      return <div>Loading...</div>
+    } else {
+      return (
+        <ul>
+          <li key={user.is}>
+            {user.name} {user.email}
+          </li>
+        </ul>
+      )
+    }
+
   }
 }
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<Clock />);
+root.render(<App />);
